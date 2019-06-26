@@ -1,0 +1,1 @@
+{"Response": "Success", "Message": "", "HasWarning": false, "Type": 100, "RateLimit": {}, "Data": {"RAW": {"PAX": {"TUSD": {"BID": ".9993", "ASK": "1.0003"}, "USDT": {"BID": ".9969", "ASK": ".9971"}}}, "DISPLAY": {"PAX": {"TUSD": {"BID": "TUSD 0.9993", "ASK": "TUSD 1.00"}, "USDT": {"BID": "\u20ae 0.9969", "ASK": "\u20ae 0.9971"}}}}}
