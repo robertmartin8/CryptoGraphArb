@@ -5,17 +5,17 @@ import math
 from collections import defaultdict
 
 
-def bellman_ford_return_cycle(g, s):
+def bellman_ford_negative_cycles(g, s):
     """
     Bellman Ford, modified so that it returns cycles.
-    Runtime is O(E^2).
+    Runtime is O(VE).
     
     :param g: graph
     :type g: networkx weighted DiGraph
     :param s: source vertex
     :type s: str
-    :return: a negative-weight cycle (if it exists)
-    :rtype: str list
+    :return: all negative-weight cycles reachable from a source vertex
+    :rtype: str list (empty if no neg-weight cyc)
     """
     n = len(g.nodes())
     d = defaultdict(lambda: math.inf)  # distances dict
@@ -32,14 +32,20 @@ def bellman_ford_return_cycle(g, s):
 
     # Find cycles if they exist
     all_cycles = []
+    seen = defaultdict(lambda: False)
+
     for u, v in g.edges():
         weight = g[u][v]["weight"]
         # If we can relax further, there must be a neg-weight cycle
+        if seen[v]:
+            continue
+
         if d[u] + weight < d[v]:
             cycle = []
             x = v
             while True:
                 # Walk back along predecessors until a cycle is found
+                seen[x] = True
                 cycle.append(x)
                 x = p[x]
                 if x == v or x in cycle:
@@ -48,15 +54,13 @@ def bellman_ford_return_cycle(g, s):
             idx = cycle.index(x)
             cycle.append(x)
             all_cycles.append(cycle[idx:][::-1])
-
-    # Filter to get unique cycles
-    return [list(i) for i in set(tuple(j) for j in all_cycles)]
+    return all_cycles
 
 
-def get_all_negative_cycles(g):
+def all_negative_cycles(g):
     """
     Get all negative-weight cycles by calling Bellman-Ford on
-    each vertex. O(VE^2)
+    each vertex. O(V^2 E)
     
     :param g: graph
     :type g: networkx weighted DiGraph
@@ -65,7 +69,7 @@ def get_all_negative_cycles(g):
     """
     all_paths = []
     for v in g.nodes():
-        all_paths.append(bellman_ford_return_cycle(g, v))
+        all_paths.append(bellman_ford_negative_cycles(g, v))
     flatten = lambda l: [item for sublist in l for item in sublist]
     return [list(i) for i in set(tuple(j) for j in flatten(all_paths))]
 
@@ -112,21 +116,19 @@ def find_arbitrage(filename="snapshot.csv", find_all=False, sources=None):
     """
     # Read df and convert to negative logs so we can use Bellman Ford
     # Negative weight cycles thus correspond to arbitrage opps
-    df = pd.read_csv(filename, header=0, index_col=0)
-    log_df = -np.log(df).fillna(0)
-
     # Transpose log_df so that graph has same API as the dataframe
-    g = nx.DiGraph(log_df.T)
+    df = pd.read_csv(filename, header=0, index_col=0)
+    g = nx.DiGraph(-np.log(df).fillna(0).T)
 
     if nx.negative_edge_cycle(g):
         print("ARBITRAGE FOUND\n" + "=" * 15 + "\n")
 
-        all_paths = []
         if find_all:
-            unique_cycles = get_all_negative_cycles(g)
+            unique_cycles = all_negative_cycles(g)
         else:
+            all_paths = []
             for s in sources:
-                all_paths.append(bellman_ford_return_cycle(g, s))
+                all_paths.append(bellman_ford_negative_cycles(g, s))
             flatten = lambda l: [item for sublist in l for item in sublist]
             unique_cycles = [list(i) for i in set(tuple(j) for j in flatten(all_paths))]
 
@@ -140,5 +142,5 @@ def find_arbitrage(filename="snapshot.csv", find_all=False, sources=None):
 
 
 if __name__ == "__main__":
-    find_arbitrage(sources=["BTC", "USDT", "ETH", "BNB"])
+    find_arbitrage(sources=["BTC", "USDT", "ETH", "BNB", "USDC", "PAX", "TUSD"])
 
