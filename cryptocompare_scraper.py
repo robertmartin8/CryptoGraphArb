@@ -2,8 +2,9 @@ import pandas as pd
 import requests
 import os
 import json
+from tqdm import tqdm
 
-AUTH = "&api_key=52b7001bba20c95d1521243dfc35aa93032c02f6b59c7235c48281527b23f0a2"
+AUTH = "52b7001bba20c95d1521243dfc35aa93032c02f6b59c7235c48281527b23f0a2"
 
 
 def top_exchange_pairs():
@@ -11,7 +12,10 @@ def top_exchange_pairs():
     Returns all pairs from the top exchances (according to CryptoCompare),
     then writes the result to pairs_list.json.
     """
-    url = "https://min-api.cryptocompare.com/data/v3/all/exchanges?topTier=true" + AUTH
+    url = (
+        "https://min-api.cryptocompare.com/data/v3/all/exchanges?topTier=true&api_key="
+        + AUTH
+    )
     r = requests.get(url)
     with open("pairs_list.json", "w") as f:
         json.dump(r.json(), f)
@@ -19,7 +23,7 @@ def top_exchange_pairs():
 
 def binance_connected_pairs():
     """
-    Loads the pairs from Binance that have more than 3 connections
+    Loads the pairs from Binance that have 3 or more connections
     
     :return: 'connected' pairs, e.g {USDT:[BTC,ETH], ETH:[ADA, OMG]}
     :rtype: {str : str list} dict
@@ -44,11 +48,11 @@ def download_snapshot(pair_dict, outfolder):
         os.makedirs(outfolder)
 
     # Download data and write to files
-    for p1, p2s in pair_dict.items():
+    for p1, p2s in tqdm(pair_dict.items()):
         try:
             url = (
                 f"https://min-api.cryptocompare.com/data/ob/l1/top?fsyms={p1}"
-                + f"&tsyms={','.join(p2s)}&e=Binance"
+                + f"&tsyms={','.join(p2s)}&e=Binance&api_key="
                 + AUTH
             )
             r = requests.get(url)
@@ -86,14 +90,19 @@ def create_adj_matrix(pair_dict, snapshot_directory, outfile="snapshot.csv"):
             res = json.load(f)
         quotes = res["Data"]["RAW"][p1]
         for p2 in quotes:
-            df[p1][p2] = float(quotes[p2]["BID"])
-            df[p2][p1] = 1 / float(quotes[p2]["ASK"])
-
+            try:
+                df[p1][p2] = float(quotes[p2]["BID"])
+                df[p2][p1] = 1 / float(quotes[p2]["ASK"])
+            except KeyError:
+                print(f"Error for {p1}/{p2}")
+                continue
     df.to_csv(outfile)
 
 
 if __name__ == "__main__":
     top_exchange_pairs()
     connected = binance_connected_pairs()
+    print("Downloading snapshot...")
     download_snapshot(connected, "binance_data")
+    print("Download finished. Creating adjacency matrix..")
     create_adj_matrix(connected, "binance_data")
