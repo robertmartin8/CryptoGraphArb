@@ -1,7 +1,7 @@
 # CryptoGraphArb
 
 <center>
-<img src="https://reasonabledeviations.science/assets/images/currency_graph.png" style="width:50px;"/>
+<img src="https://reasonabledeviations.science/assets/images/weighted_digraph.png" style="width:50%;"/>
 </center>
 
 This is the supporting code for my [post](https://reasonabledeviations.science/2019/04/21/currency-arbitrage-graphs-2/) on using graph theory to discover arbitrage opportunities in a cryptocurrency market.
