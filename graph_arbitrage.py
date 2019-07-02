@@ -9,7 +9,7 @@ def bellman_ford_negative_cycles(g, s):
     """
     Bellman Ford, modified so that it returns cycles.
     Runtime is O(VE).
-    
+
     :param g: graph
     :type g: networkx weighted DiGraph
     :param s: source vertex
@@ -61,7 +61,7 @@ def all_negative_cycles(g):
     """
     Get all negative-weight cycles by calling Bellman-Ford on
     each vertex. O(V^2 E)
-    
+
     :param g: graph
     :type g: networkx weighted DiGraph
     :return: list of negative-weight cycles
@@ -78,7 +78,7 @@ def calculate_arb(cycle, g, verbose=True):
     """
     For a given negative-weight cycle on the log graph, calculate and
     print the arbitrage
-    
+
     :param cycle: the negative-weight cycle
     :type cycle: list
     :param g: graph
@@ -102,7 +102,7 @@ def find_arbitrage(filename="snapshot.csv", find_all=False, sources=None):
     """
     Looks for arbitrage opportunities within a snapshot, i.e negative-weight cycles
     that include the currencies given in the sources list
-    
+
     :param filename: filename of snapshot, defaults to "snapshot.csv"
     :type filename: str, optional
     :param find_all: whether to find all paths, defaults to False.
@@ -142,5 +142,4 @@ def find_arbitrage(filename="snapshot.csv", find_all=False, sources=None):
 
 
 if __name__ == "__main__":
-    find_arbitrage(sources=["BTC", "USDT", "ETH", "BNB", "USDC", "PAX", "TUSD"])
-
+    find_arbitrage(find_all=True)

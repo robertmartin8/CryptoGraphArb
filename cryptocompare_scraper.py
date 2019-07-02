@@ -4,7 +4,7 @@ import os
 import json
 from tqdm import tqdm
 
-AUTH = "52b7001bba20c95d1521243dfc35aa93032c02f6b59c7235c48281527b23f0a2"
+AUTH = ""
 
 
 def top_exchange_pairs():
@@ -24,7 +24,7 @@ def top_exchange_pairs():
 def binance_connected_pairs():
     """
     Loads the pairs from Binance that have 3 or more connections
-    
+
     :return: 'connected' pairs, e.g {USDT:[BTC,ETH], ETH:[ADA, OMG]}
     :rtype: {str : str list} dict
     """
@@ -38,7 +38,7 @@ def download_snapshot(pair_dict, outfolder):
     """
     Downloads a snapshot of bid/asks for a given dictionary of pairs,
     writes json to files.
-    
+
     :param pair_dict: dict of pairs
     :type pair_dict: {str : str list}
     :param outfolder: name of folder to output to
@@ -100,6 +100,9 @@ def create_adj_matrix(pair_dict, snapshot_directory, outfile="snapshot.csv"):
 
 
 if __name__ == "__main__":
+    if AUTH == "":
+        with open("API_KEY.txt", "r") as f:
+            AUTH = f.read()
     top_exchange_pairs()
     connected = binance_connected_pairs()
     print("Downloading snapshot...")
